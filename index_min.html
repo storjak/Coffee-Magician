@@ -1,0 +1,40 @@
+<!DOCTYPE html><title>Coffee Magician</title><style>@media (min-aspect-ratio:1/1){html{background-size:cover!important;display:flex;flex-direction:row;justify-content:center}body{width:40%}h1{font-size:4em!important}#mainSelect{font-size:1.5em!important}#genContent,#genContent *{font-size:1.2em!important}#genContent input,#genContent select{font-size:1em!important}#result{font-size:2em!important}}*{margin:20px;padding:0;box-sizing:border-box}html{background-color:#301d06;background-image:url(beans.jpg);min-height:100vh;min-width:100vw;background-size:auto 110vh;background-repeat:no-repeat;margin:0}body{background-color:rgba(210,180,140,.6);box-shadow:0 0 15px 15px rgba(210,180,140,.6);margin:20px;display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;align-content:flex;row-gap:2vh}h1{width:100%;margin:0;font-size:8em;text-align:center;background:linear-gradient(#301d06 35%,#000 100%);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}#mainSelectWrapper{width:100%;margin:0}#mainSelect{text-align-last:center;margin:0;padding:2%;width:100%;font-size:3em;font-family:inherit}#genContent,#genContent *{width:100%;text-align:center;font-size:1.5em;margin:0}#genContent input,#genContent select{font-size:.8em;width:3em;font-family:inherit}#factorCheck{height:1em;width:1em!important}#gDesc{font-size:1em}#wantGoButton{margin-top:2%}#haveCoffeeWater{width:5em!important}#result{margin:0;font-size:4.3em;font-family:inherit;text-align:center}</style><h1>Coffee Magician</h1><div id=mainSelectWrapper><select id=mainSelect name=want_or_have><option value=want>I want this much coffee...<option value=have>How much can I make with...</select></div><div id=genContent></div><div id=result></div><script>let formSrcElem = undefined;
+    const wantElement=document.createElement("div");wantElement.setAttribute("id","wantContent");wantElement.innerHTML=`<form id="wantForm">
+            <div>
+                I want <input type="number" id="wantVolume" name="wantVolume" min="1" step="0.1" placeholder="#" required> <select id="wantVolumeUnit">
+                    <option value="oz">fl oz</option>
+                    <option value="ml">ml</option>
+                </select> of coffee,
+            </div>
+            <div id="ratioInput">
+                at a ratio of <input type="number" id="wantRatio" name="wantRatio" min="1" step="0.1"
+                    placeholder="16.5" required>.
+            </div>
+            <div id="factorCheckContainer">
+                <input type="checkbox" id="factorCheck" name="factorCheck"> Correct for grounds
+                absorption?
+            </div>
+            <div id="gDesc">
+                Grounds absorption is based on 2ml of water absorbed per 1g of coffee.
+            </div>
+            <div>
+                <input type="submit" id="wantGoButton" value="Go">
+            </div>
+        </form>`;const haveElement=document.createElement("div");haveElement.setAttribute("id","haveContent");haveElement.innerHTML=`<div id="haveContentSelectorContainer">
+            I'm limited by my <select id="haveCoffeeWater">
+                <option value="coffee">coffee</option>
+                <option value="water">water</option>
+            </select>.
+        </div>
+        <form id="haveForm">
+            <div id="ratioInput">
+                and I want a ratio of <input type="number" id="haveRatio" name="haveRatio" min="1" step="0.1"
+                    placeholder="16.5" required>.
+            </div>
+            <div>
+                <input type="submit" id="haveGoButton" value="Go">
+            </div>
+        </form>`;const haveCoffee=document.createElement("div");haveCoffee.setAttribute("id","haveCoffee");haveCoffee.innerHTML='I have <input type="number" id="haveCoffee" name="haveCoffee" min="1" step="0.1" placeholder="#" required>g of coffee,';const haveWater=document.createElement("div");haveWater.setAttribute("id","haveWater");haveWater.innerHTML=`I have <input type="number" id="haveWater" name="haveWater" min="1" step="0.1" placeholder="#" required> <select id="haveWaterUnit">
+            <option value="ml">ml</option>
+            <option value="oz">fl oz</option>
+        </select> of water,`;const hook=document.getElementById("genContent");const mainSelect=document.getElementById("mainSelect");const resultHook=document.getElementById("result");mainSelect.addEventListener("input",()=>{contentDecider(mainSelect.value,hook.firstElementChild)});hook.addEventListener("submit",(e)=>{e.preventDefault();let formElements=document.getElementsByTagName("form")[0].elements;let formDataArr=[];for(let i=0;i<formElements.length-1;i+=1){let valueName=formElements[i].getAttribute("id");let grabbedValue=formElements[i].value;if(grabbedValue==="on"){grabbedValue=formElements[i].checked}formDataArr.push([valueName,grabbedValue])}console.dir(formHandler(formDataArr));return false});function formHandler(formDataArray){let formDataObj=Object.fromEntries(formDataArray);const mlFactor=29.5735296;let volume;let coffee;switch(Object.values(formDataObj).length){case 4:if(formDataObj.wantVolumeUnit==="oz"){volume=formDataObj.wantVolume*mlFactor}else{volume=Number(formDataObj.wantVolume)}if(formDataObj.factorCheck){volume=(formDataObj.wantRatio*volume)/(formDataObj.wantRatio-2);coffee=volume/formDataObj.wantRatio}else{coffee=volume/formDataObj.wantRatio}resultHook.innerHTML="You will need "+coffee.toFixed(1)+"g of coffee and "+volume.toFixed(1)+"ml ("+(volume/mlFactor).toFixed(1)+"fl oz) of water and will end up with about "+(volume-(2*coffee)).toFixed(1)+"ml ("+((volume-(2*coffee))/mlFactor).toFixed(1)+"fl oz) of coffee.  You should consider blooming with "+(coffee*2).toFixed(1)+"ml ("+((coffee*2)/mlFactor).toFixed(1)+"fl oz) of water.";break;case 2:coffee=Number(formDataObj.haveCoffee);volume=coffee*formDataObj.haveRatio;resultHook.innerHTML="You will need "+volume.toFixed(1)+"ml ("+(volume/mlFactor).toFixed(1)+"fl oz) of water with your "+coffee.toFixed(1)+"g of coffee to use what you have, and will end up with about "+(volume-(2*coffee)).toFixed(1)+"ml ("+((volume-(2*coffee))/mlFactor).toFixed(1)+"fl oz) of coffee.  You should consider blooming with "+(coffee*2).toFixed(1)+"ml ("+((coffee*2)/mlFactor).toFixed(1)+"fl oz) of water.";break;case 3:if(formDataObj.haveWaterUnit==="oz"){volume=formDataObj.haveWater*mlFactor}else{volume=Number(formDataObj.haveWater)}coffee=volume/formDataObj.haveRatio;resultHook.innerHTML="You will need "+coffee.toFixed(1)+"g of coffee to use with your "+volume.toFixed(1)+"ml ("+(volume/mlFactor).toFixed(1)+"fl oz) of water to use what you have and will end up with about "+(volume-(2*coffee)).toFixed(1)+"ml ("+((volume-(2*coffee))/mlFactor).toFixed(1)+"fl oz) of coffee.  You should consider blooming with "+(coffee*2).toFixed(1)+"ml ("+((coffee*2)/mlFactor).toFixed(1)+"fl oz) of water.";break;default:throw "formHandler received an unexpected argument: "+formDataArray}}function contentDecider(contentVal,removeElem=undefined){if(removeElem){removeElem.remove()}switch(contentVal){case "want":hook.append(wantElement);break;case "have":hook.append(haveElement);const haveElementSelector=document.getElementById("haveCoffeeWater");contentDecider(haveElementSelector.value);haveElementSelector.addEventListener("input",()=>{contentDecider(haveElementSelector.value,document.getElementById("haveForm").children[0])});break;case "coffee":document.getElementById("ratioInput").before(haveCoffee);break;case "water":document.getElementById("ratioInput").before(haveWater);break;default:throw "contentDecider received an unexpected argument: "+contentVal}}contentDecider(mainSelect.value);</script>
